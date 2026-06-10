@@ -241,12 +241,32 @@
     .image-result { position: relative; }
     .image-result img {
       width: 100%; display: block; aspect-ratio: 1; object-fit: cover;
+      cursor: pointer;
     }
     .image-actions {
       display: flex; gap: 8px; padding: 10px 12px;
       background: var(--bg); border-top: 1px solid var(--gray-light);
     }
     .image-actions .btn-outline { flex: 1; font-size: 12px; padding: 8px; }
+
+    /* 图片预览灯箱 */
+    .lightbox {
+      display: none; position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.92);
+      justify-content: center; align-items: center;
+    }
+    .lightbox.show { display: flex; }
+    .lightbox img {
+      max-width: 90vw; max-height: 90vh; object-fit: contain;
+      border-radius: 4px;
+    }
+    .lightbox-close {
+      position: absolute; top: 20px; right: 24px;
+      width: 40px; height: 40px; border-radius: 50%;
+      background: rgba(255,255,255,0.15); border: none;
+      color: #fff; font-size: 22px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
     .image-failed {
       padding: 20px; text-align: center; color: var(--text-hint);
       font-size: 13px;
@@ -1166,10 +1186,11 @@
           <div class="image-loading-hint">正在将你的角色转化为画面</div>
         </div>
         <div class="image-result" id="image-result" style="display:none;">
-          <img id="generated-image" src="" alt="AI生成图" />
+          <img id="generated-image" src="" alt="AI生成图" onclick="previewImage()" />
           <div class="image-actions">
-            <button class="btn-outline" onclick="downloadImage()">💾 保存图片</button>
-            <button class="btn-outline" onclick="copyImageUrl()">🔗 复制链接</button>
+            <button class="btn-outline" onclick="previewImage()">🔍 预览</button>
+            <button class="btn-outline" onclick="downloadImage()">💾 保存</button>
+            <button class="btn-outline" onclick="copyImageUrl()">🔗 链接</button>
           </div>
         </div>
         <div class="image-failed" id="image-failed" style="display:none;">
@@ -1315,6 +1336,18 @@
     document.getElementById('image-section').style.display = 'none';
   }
 
+  function previewImage() {
+    if (!currentImageUrl) return;
+    document.getElementById('lightbox-img').src = currentImageUrl;
+    document.getElementById('lightbox').classList.add('show');
+  }
+
+  function closePreview(e) {
+    // 点击遮罩层才关闭，点击图片不关闭
+    if (e && e.target.tagName === 'IMG') return;
+    document.getElementById('lightbox').classList.remove('show');
+  }
+
   function downloadImage() {
     if (!currentImageUrl) return;
     const a = document.createElement('a');
@@ -1341,6 +1374,13 @@
   // ====== 选项交互 ======
   function selectOpt(btn, field) {
     const row = btn.closest('[data-field]');
+    // 如果点击的是已选中的按钮 → 取消选中
+    if (btn.classList.contains('selected')) {
+      btn.classList.remove('selected');
+      delete selections[field];
+      updateProgress();
+      return;
+    }
     row.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
     selections[field] = btn.textContent.trim();
@@ -1586,5 +1626,12 @@
     setTimeout(() => el.classList.remove('show'), 2500);
   }
 </script>
+
+<!-- 图片预览灯箱 -->
+<div class="lightbox" id="lightbox" onclick="closePreview(event)">
+  <button class="lightbox-close" onclick="closePreview()">✕</button>
+  <img id="lightbox-img" src="" alt="预览" />
+</div>
+
 </body>
 </html>
