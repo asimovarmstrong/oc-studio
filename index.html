@@ -222,6 +222,35 @@
     .oc-name { font-size: 18px; font-weight: 800; }
     .oc-meta { font-size: 12px; color: rgba(255,255,255,.65); margin-top: 2px; }
     .oc-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    /* 图片生成区 */
+    .image-section {
+      border-radius: var(--radius-card); border: 1px solid var(--gray-border);
+      background: var(--white); overflow: hidden;
+    }
+    .image-loading {
+      padding: 32px 16px; text-align: center; color: var(--text-secondary);
+      font-size: 14px;
+    }
+    .img-spinner {
+      width: 36px; height: 36px; border: 3px solid var(--gray-light);
+      border-top-color: var(--black); border-radius: 50%; margin: 0 auto 16px;
+      animation: spin .8s linear infinite;
+    }
+    .image-loading-hint { font-size: 12px; color: var(--text-hint); margin-top: 6px; }
+    .image-result { position: relative; }
+    .image-result img {
+      width: 100%; display: block; aspect-ratio: 1; object-fit: cover;
+    }
+    .image-actions {
+      display: flex; gap: 8px; padding: 10px 12px;
+      background: var(--bg); border-top: 1px solid var(--gray-light);
+    }
+    .image-actions .btn-outline { flex: 1; font-size: 12px; padding: 8px; }
+    .image-failed {
+      padding: 20px; text-align: center; color: var(--text-hint);
+      font-size: 13px;
+    }
     .oc-tag {
       height: 24px; padding: 0 10px; border-radius: 12px;
       background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.3);
@@ -344,7 +373,7 @@
         <div class="feature-card"><span class="icon">📋</span><span>复制使用</span></div>
       </div>
       <button class="btn-main" onclick="goToForm()">开始创作我的 OC ✨</button>
-      <p class="home-desc">支持外貌、性格、背景、技能等 20+ 项设定<br>未填写的选项可随时跳过 → 提交即得提示词</p>
+      <p class="home-desc">支持外貌、性格、背景、技能、声音、象征、故事、画风等 48 项详细设定<br>未填写的选项可随时跳过 → 提交即得提示词</p>
     </div>
   </div>
 
@@ -364,7 +393,7 @@
     <!-- 问卷内容 -->
     <div class="form-scroll" id="form-scroll">
 
-      <div class="section-title">📜 基本信息</div>
+      <div class="section-title">📜 外貌与形象</div>
 
       <div class="q-card">
         <div class="q-header">
@@ -393,25 +422,33 @@
       <div class="q-card">
         <div class="q-header">
           <div class="q-num">3</div>
-          <span class="q-title">年龄/年龄感</span>
+          <span class="q-title">年龄 / 年龄感</span>
           <span class="q-optional">可选</span>
         </div>
         <div class="options-row" data-field="age">
-          <button class="opt-btn" onclick="selectOpt(this,'age')">少年感（15-18）</button>
-          <button class="opt-btn" onclick="selectOpt(this,'age')">青年感（18-25）</button>
-          <button class="opt-btn" onclick="selectOpt(this,'age')">成熟感（25+）</button>
-          <button class="opt-btn" onclick="selectOpt(this,'age')">神秘/不确定</button>
+          <button class="opt-btn" onclick="selectOpt(this,'age')">幼年（8-12）</button>
+          <button class="opt-btn" onclick="selectOpt(this,'age')">少年感（13-17）</button>
+          <button class="opt-btn" onclick="selectOpt(this,'age')">青年感（18-24）</button>
+          <button class="opt-btn" onclick="selectOpt(this,'age')">成熟感（25-35）</button>
+          <button class="opt-btn" onclick="selectOpt(this,'age')">中年感（35+）</button>
+          <button class="opt-btn" onclick="selectOpt(this,'age')">不朽/超龄</button>
         </div>
       </div>
 
       <div class="q-card">
         <div class="q-header">
           <div class="q-num">4</div>
-          <span class="q-title">外貌描述</span>
+          <span class="q-title">身高与体型</span>
           <span class="q-optional">可选</span>
         </div>
-        <p class="q-hint">💡 描述越详细，提示词越精准</p>
-        <textarea class="q-textarea" id="q-appearance" placeholder="例如：长银发、青色眼睛、白皙皮肤、高挑身材&#10;可以描述发型、眼睛颜色、肤色、身材特征等..." oninput="updateProgress()"></textarea>
+        <div class="options-row" data-field="bodytype">
+          <button class="opt-btn" onclick="selectOpt(this,'bodytype')">娇小纤瘦</button>
+          <button class="opt-btn" onclick="selectOpt(this,'bodytype')">中等匀称</button>
+          <button class="opt-btn" onclick="selectOpt(this,'bodytype')">高挑修长</button>
+          <button class="opt-btn" onclick="selectOpt(this,'bodytype')">高大魁梧</button>
+          <button class="opt-btn" onclick="selectOpt(this,'bodytype')">丰满圆润</button>
+          <button class="opt-btn" onclick="selectOpt(this,'bodytype')">肌肉发达</button>
+        </div>
       </div>
 
       <div class="q-card">
@@ -421,14 +458,16 @@
           <span class="q-optional">可选</span>
         </div>
         <div class="options-row" data-field="haircolor">
-          <button class="opt-btn" onclick="selectOpt(this,'haircolor')">黑发</button>
-          <button class="opt-btn" onclick="selectOpt(this,'haircolor')">褐发</button>
-          <button class="opt-btn" onclick="selectOpt(this,'haircolor')">金发</button>
-          <button class="opt-btn" onclick="selectOpt(this,'haircolor')">银白发</button>
-          <button class="opt-btn" onclick="selectOpt(this,'haircolor')">红发</button>
-          <button class="opt-btn" onclick="selectOpt(this,'haircolor')">蓝发</button>
+          <button class="opt-btn" onclick="selectOpt(this,'haircolor')">黑色</button>
+          <button class="opt-btn" onclick="selectOpt(this,'haircolor')">褐色/栗色</button>
+          <button class="opt-btn" onclick="selectOpt(this,'haircolor')">金色</button>
+          <button class="opt-btn" onclick="selectOpt(this,'haircolor')">银白/灰白</button>
+          <button class="opt-btn" onclick="selectOpt(this,'haircolor')">红色</button>
+          <button class="opt-btn" onclick="selectOpt(this,'haircolor')">蓝色</button>
+          <button class="opt-btn" onclick="selectOpt(this,'haircolor')">紫色</button>
+          <button class="opt-btn" onclick="selectOpt(this,'haircolor')">粉色</button>
+          <button class="opt-btn" onclick="selectOpt(this,'haircolor')">绿色</button>
           <button class="opt-btn" onclick="selectOpt(this,'haircolor')">渐变色</button>
-          <button class="opt-btn" onclick="selectOpt(this,'haircolor')">其他</button>
         </div>
       </div>
 
@@ -444,24 +483,54 @@
           <button class="opt-btn" onclick="selectOpt(this,'hairstyle')">长直发</button>
           <button class="opt-btn" onclick="selectOpt(this,'hairstyle')">长卷发</button>
           <button class="opt-btn" onclick="selectOpt(this,'hairstyle')">双马尾</button>
-          <button class="opt-btn" onclick="selectOpt(this,'hairstyle')">马尾</button>
+          <button class="opt-btn" onclick="selectOpt(this,'hairstyle')">单马尾</button>
           <button class="opt-btn" onclick="selectOpt(this,'hairstyle')">麻花辫</button>
-          <button class="opt-btn" onclick="selectOpt(this,'hairstyle')">半扎</button>
+          <button class="opt-btn" onclick="selectOpt(this,'hairstyle')">丸子头/盘发</button>
+          <button class="opt-btn" onclick="selectOpt(this,'hairstyle')">不对称/偏分</button>
+          <button class="opt-btn" onclick="selectOpt(this,'hairstyle')">杂乱/野性</button>
         </div>
       </div>
-
-      <div class="section-title">✨ 性格与内心</div>
 
       <div class="q-card">
         <div class="q-header">
           <div class="q-num">7</div>
+          <span class="q-title">眼睛颜色 / 特征</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <div class="options-row" data-field="eyecolor">
+          <button class="opt-btn" onclick="selectOpt(this,'eyecolor')">黑色/深褐</button>
+          <button class="opt-btn" onclick="selectOpt(this,'eyecolor')">蓝色</button>
+          <button class="opt-btn" onclick="selectOpt(this,'eyecolor')">绿色</button>
+          <button class="opt-btn" onclick="selectOpt(this,'eyecolor')">红色/赤瞳</button>
+          <button class="opt-btn" onclick="selectOpt(this,'eyecolor')">金色/琥珀</button>
+          <button class="opt-btn" onclick="selectOpt(this,'eyecolor')">紫色</button>
+          <button class="opt-btn" onclick="selectOpt(this,'eyecolor')">异色瞳</button>
+          <button class="opt-btn" onclick="selectOpt(this,'eyecolor')">灰色/银色</button>
+        </div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">8</div>
+          <span class="q-title">外貌细节补充</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <p class="q-hint">💡 皮肤特征、面部标志、痣、疤痕、耳饰、纹身等</p>
+        <textarea class="q-textarea" id="q-appearance" placeholder="例如：白皙皮肤、左眼角有泪痣、右臂有龙纹身、戴银色耳钉..." oninput="updateProgress()"></textarea>
+      </div>
+
+      <div class="section-title">✨ 性格与标签</div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">9</div>
           <span class="q-title">性格特征（可多选）</span>
           <span class="q-optional">可选</span>
         </div>
         <div class="options-row" data-field="personality" data-multi="true">
           <button class="opt-btn" onclick="selectMulti(this,'personality')">💤 寡言冷静</button>
           <button class="opt-btn" onclick="selectMulti(this,'personality')">🔥 热血激情</button>
-          <button class="opt-btn" onclick="selectMulti(this,'personality')">😈 腹黑反派</button>
+          <button class="opt-btn" onclick="selectMulti(this,'personality')">😈 腹黑狡黠</button>
           <button class="opt-btn" onclick="selectMulti(this,'personality')">🌸 温柔体贴</button>
           <button class="opt-btn" onclick="selectMulti(this,'personality')">⚡ 活泼开朗</button>
           <button class="opt-btn" onclick="selectMulti(this,'personality')">🌑 孤独神秘</button>
@@ -469,24 +538,80 @@
           <button class="opt-btn" onclick="selectMulti(this,'personality')">🃏 玩世不恭</button>
           <button class="opt-btn" onclick="selectMulti(this,'personality')">🧠 理智冷酷</button>
           <button class="opt-btn" onclick="selectMulti(this,'personality')">💔 内心破碎</button>
+          <button class="opt-btn" onclick="selectMulti(this,'personality')">😊 天然呆萌</button>
+          <button class="opt-btn" onclick="selectMulti(this,'personality')">🎭 表里不一</button>
         </div>
       </div>
 
       <div class="q-card">
         <div class="q-header">
-          <div class="q-num">8</div>
+          <div class="q-num">10</div>
+          <span class="q-title">MBTI / 人格类型</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <p class="q-hint">💡 不确定可以跳过，选大致方向即可</p>
+        <div class="options-row" data-field="mbti">
+          <button class="opt-btn" onclick="selectOpt(this,'mbti')">INTJ · 建筑师</button>
+          <button class="opt-btn" onclick="selectOpt(this,'mbti')">INTP · 逻辑学家</button>
+          <button class="opt-btn" onclick="selectOpt(this,'mbti')">ENTJ · 指挥官</button>
+          <button class="opt-btn" onclick="selectOpt(this,'mbti')">ENTP · 辩论家</button>
+          <button class="opt-btn" onclick="selectOpt(this,'mbti')">INFJ · 提倡者</button>
+          <button class="opt-btn" onclick="selectOpt(this,'mbti')">INFP · 调停者</button>
+          <button class="opt-btn" onclick="selectOpt(this,'mbti')">ENFJ · 主人公</button>
+          <button class="opt-btn" onclick="selectOpt(this,'mbti')">ENFP · 竞选者</button>
+          <button class="opt-btn" onclick="selectOpt(this,'mbti')">ISTJ · 物流师</button>
+          <button class="opt-btn" onclick="selectOpt(this,'mbti')">ISFJ · 守卫者</button>
+          <button class="opt-btn" onclick="selectOpt(this,'mbti')">ESTJ · 总经理</button>
+          <button class="opt-btn" onclick="selectOpt(this,'mbti')">ESFJ · 执政官</button>
+          <button class="opt-btn" onclick="selectOpt(this,'mbti')">ISTP · 鉴赏家</button>
+          <button class="opt-btn" onclick="selectOpt(this,'mbti')">ISFP · 探险家</button>
+          <button class="opt-btn" onclick="selectOpt(this,'mbti')">ESTP · 企业家</button>
+          <button class="opt-btn" onclick="selectOpt(this,'mbti')">ESFP · 表演者</button>
+        </div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">11</div>
+          <span class="q-title">喜好与兴趣</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <textarea class="q-textarea" id="q-likes" placeholder="角色喜欢什么？有什么爱好？&#10;例如：喜欢在雨中散步、爱喝红茶、痴迷收藏古书..." oninput="updateProgress()"></textarea>
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">12</div>
+          <span class="q-title">讨厌 / 恐惧的事物</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <textarea class="q-textarea" id="q-dislikes" placeholder="角色讨厌什么？害怕什么？&#10;例如：讨厌虚伪的人、害怕深海、对蜘蛛有恐惧症..." oninput="updateProgress()"></textarea>
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">13</div>
           <span class="q-title">内心世界 / 核心伤痛</span>
           <span class="q-optional">可选</span>
         </div>
-        <textarea class="q-textarea" id="q-inner" placeholder="角色的内心深处藏着什么？&#10;例如：幼年失去双亲，表面冷漠实则渴望认同..." oninput="updateProgress()"></textarea>
+        <textarea class="q-textarea" id="q-inner" placeholder="角色内心深处藏着什么？有过怎样的创伤？&#10;例如：幼年失去双亲，表面冷漠实则极度渴望被认可..." oninput="updateProgress()"></textarea>
       </div>
-
-      <div class="section-title">⚔️ 背景与世界观</div>
 
       <div class="q-card">
         <div class="q-header">
-          <div class="q-num">9</div>
-          <span class="q-title">世界观/所处世界</span>
+          <div class="q-num">14</div>
+          <span class="q-title">行为习惯 / 口头禅 / 小动作</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <textarea class="q-textarea" id="q-habits" placeholder="角色有什么特别的习惯和动作？&#10;例如：说话前习惯推眼镜、紧张时咬指甲、常说口头禅...&quot;真是麻烦呢&quot;" oninput="updateProgress()"></textarea>
+      </div>
+
+      <div class="section-title">⚔️ 背景与身份</div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">15</div>
+          <span class="q-title">世界观 / 所处世界</span>
           <span class="q-optional">可选</span>
         </div>
         <div class="options-row" data-field="world">
@@ -496,43 +621,135 @@
           <button class="opt-btn" onclick="selectOpt(this,'world')">末世废土</button>
           <button class="opt-btn" onclick="selectOpt(this,'world')">赛博朋克</button>
           <button class="opt-btn" onclick="selectOpt(this,'world')">校园日常</button>
+          <button class="opt-btn" onclick="selectOpt(this,'world')">蒸汽朋克</button>
           <button class="opt-btn" onclick="selectOpt(this,'world')">异世界转生</button>
-          <button class="opt-btn" onclick="selectOpt(this,'world')">架空历史</button>
+          <button class="opt-btn" onclick="selectOpt(this,'world')">架空古代</button>
+          <button class="opt-btn" onclick="selectOpt(this,'world')">近未来科幻</button>
         </div>
       </div>
 
       <div class="q-card">
         <div class="q-header">
-          <div class="q-num">10</div>
+          <div class="q-num">16</div>
+          <span class="q-title">种族 / 物种</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <div class="options-row" data-field="race">
+          <button class="opt-btn" onclick="selectOpt(this,'race')">人类</button>
+          <button class="opt-btn" onclick="selectOpt(this,'race')">精灵</button>
+          <button class="opt-btn" onclick="selectOpt(this,'race')">半兽人/兽人</button>
+          <button class="opt-btn" onclick="selectOpt(this,'race')">吸血鬼</button>
+          <button class="opt-btn" onclick="selectOpt(this,'race')">狼人</button>
+          <button class="opt-btn" onclick="selectOpt(this,'race')">天使/翼人</button>
+          <button class="opt-btn" onclick="selectOpt(this,'race')">恶魔/魔族</button>
+          <button class="opt-btn" onclick="selectOpt(this,'race')">人造人/机器人</button>
+          <button class="opt-btn" onclick="selectOpt(this,'race')">龙族</button>
+          <button class="opt-btn" onclick="selectOpt(this,'race')">妖精/精灵族</button>
+        </div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">17</div>
           <span class="q-title">职业 / 身份</span>
           <span class="q-optional">可选</span>
         </div>
-        <input class="q-input" id="q-job" placeholder="例如：法师、侦探、学生、佣兵、神明..." oninput="updateProgress()" />
+        <input class="q-input" id="q-job" placeholder="例如：流浪剑客、魔法学院教授、地下黑客、宫廷画师..." oninput="updateProgress()" />
       </div>
 
       <div class="q-card">
         <div class="q-header">
-          <div class="q-num">11</div>
+          <div class="q-num">18</div>
+          <span class="q-title">社会地位 / 阶层</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <div class="options-row" data-field="status">
+          <button class="opt-btn" onclick="selectOpt(this,'status')">皇室/贵族</button>
+          <button class="opt-btn" onclick="selectOpt(this,'status')">上层精英</button>
+          <button class="opt-btn" onclick="selectOpt(this,'status')">中产阶级</button>
+          <button class="opt-btn" onclick="selectOpt(this,'status')">平民/普通人</button>
+          <button class="opt-btn" onclick="selectOpt(this,'status')">底层/贫民</button>
+          <button class="opt-btn" onclick="selectOpt(this,'status')">流亡者/无身份</button>
+          <button class="opt-btn" onclick="selectOpt(this,'status')">被通缉/逃犯</button>
+          <button class="opt-btn" onclick="selectOpt(this,'status')">隐世高人</button>
+        </div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">19</div>
+          <span class="q-title">出身地 / 故乡</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <input class="q-input" id="q-birthplace" placeholder="例如：北方冰雪王国、沿海渔村、地下城贫民窟..." oninput="updateProgress()" />
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">20</div>
           <span class="q-title">背景故事</span>
           <span class="q-optional">可选</span>
         </div>
-        <textarea class="q-textarea" id="q-backstory" placeholder="角色的来历和经历是什么？&#10;简单描述即可，几句话就够..." oninput="updateProgress()"></textarea>
+        <textarea class="q-textarea" id="q-backstory" placeholder="角色的人生经历和重要转折点...&#10;简单描述即可，AI 会帮你丰满细节" oninput="updateProgress()"></textarea>
       </div>
-
-      <div class="section-title">🌟 特殊设定</div>
 
       <div class="q-card">
         <div class="q-header">
-          <div class="q-num">12</div>
+          <div class="q-num">21</div>
+          <span class="q-title">重要人际关系</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <textarea class="q-textarea" id="q-relations" placeholder="角色与谁有重要关系？&#10;例如：有一个青梅竹马的死对头、一位神秘师父、暗中仰慕的对象..." oninput="updateProgress()"></textarea>
+      </div>
+
+      <div class="section-title">⚡ 能力与风格</div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">22</div>
           <span class="q-title">特殊能力 / 技能</span>
           <span class="q-optional">可选</span>
         </div>
-        <textarea class="q-textarea" id="q-ability" placeholder="例如：操控火焰、预知未来、时空穿越、剑术大师..." oninput="updateProgress()"></textarea>
+        <textarea class="q-textarea" id="q-ability" placeholder="例如：操控火焰、预知未来、时空扭曲、百步穿杨..." oninput="updateProgress()"></textarea>
       </div>
 
       <div class="q-card">
         <div class="q-header">
-          <div class="q-num">13</div>
+          <div class="q-num">23</div>
+          <span class="q-title">能力等级</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <div class="options-row" data-field="powerlevel">
+          <button class="opt-btn" onclick="selectOpt(this,'powerlevel')">普通人（无特殊能力）</button>
+          <button class="opt-btn" onclick="selectOpt(this,'powerlevel')">初级/入门</button>
+          <button class="opt-btn" onclick="selectOpt(this,'powerlevel')">中级/熟练</button>
+          <button class="opt-btn" onclick="selectOpt(this,'powerlevel')">高级/精英</button>
+          <button class="opt-btn" onclick="selectOpt(this,'powerlevel')">顶尖/传奇</button>
+          <button class="opt-btn" onclick="selectOpt(this,'powerlevel')">逆天/神级</button>
+        </div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">24</div>
+          <span class="q-title">战斗风格</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <div class="options-row" data-field="fightstyle">
+          <button class="opt-btn" onclick="selectOpt(this,'fightstyle')">近战肉搏</button>
+          <button class="opt-btn" onclick="selectOpt(this,'fightstyle')">剑术/刀法</button>
+          <button class="opt-btn" onclick="selectOpt(this,'fightstyle')">远程射手</button>
+          <button class="opt-btn" onclick="selectOpt(this,'fightstyle')">元素魔法</button>
+          <button class="opt-btn" onclick="selectOpt(this,'fightstyle')">暗杀/潜行</button>
+          <button class="opt-btn" onclick="selectOpt(this,'fightstyle')">召唤/傀儡术</button>
+          <button class="opt-btn" onclick="selectOpt(this,'fightstyle')">治疗/辅助</button>
+          <button class="opt-btn" onclick="selectOpt(this,'fightstyle')">精神/心灵系</button>
+        </div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">25</div>
           <span class="q-title">服装风格</span>
           <span class="q-optional">可选</span>
         </div>
@@ -545,22 +762,33 @@
           <button class="opt-btn" onclick="selectOpt(this,'outfit')">华丽礼服</button>
           <button class="opt-btn" onclick="selectOpt(this,'outfit')">暗黑哥特</button>
           <button class="opt-btn" onclick="selectOpt(this,'outfit')">机甲科技</button>
+          <button class="opt-btn" onclick="selectOpt(this,'outfit')">废土风/破旧</button>
+          <button class="opt-btn" onclick="selectOpt(this,'outfit')">民族服饰</button>
         </div>
       </div>
 
       <div class="q-card">
         <div class="q-header">
-          <div class="q-num">14</div>
+          <div class="q-num">26</div>
+          <span class="q-title">配饰与细节</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <textarea class="q-textarea" id="q-accessories" placeholder="角色的配饰、饰品、妆容等细节...&#10;例如：左耳戴三枚银环、颈间系着褪色的红绳、右手无名指有家族戒指..." oninput="updateProgress()"></textarea>
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">27</div>
           <span class="q-title">标志性物品 / 武器</span>
           <span class="q-optional">可选</span>
         </div>
-        <input class="q-input" id="q-item" placeholder="例如：红色大剑、古旧怀表、神秘面具..." oninput="updateProgress()" />
+        <input class="q-input" id="q-item" placeholder="例如：猩红巨剑·血月、古旧黄铜怀表、半裂的狐狸面具..." oninput="updateProgress()" />
       </div>
 
       <div class="q-card">
         <div class="q-header">
-          <div class="q-num">15</div>
-          <span class="q-title">想要的画面氛围</span>
+          <div class="q-num">28</div>
+          <span class="q-title">想要的画面氛围（可多选）</span>
           <span class="q-optional">可选</span>
         </div>
         <div class="options-row" data-field="mood" data-multi="true">
@@ -570,16 +798,333 @@
           <button class="opt-btn" onclick="selectMulti(this,'mood')">✨ 梦幻绮丽</button>
           <button class="opt-btn" onclick="selectMulti(this,'mood')">🔥 热血燃爆</button>
           <button class="opt-btn" onclick="selectMulti(this,'mood')">❄️ 冷峻孤寂</button>
+          <button class="opt-btn" onclick="selectMulti(this,'mood')">☕ 温馨日常</button>
+          <button class="opt-btn" onclick="selectMulti(this,'mood')">🎭 戏剧冲突</button>
         </div>
       </div>
 
       <div class="q-card">
         <div class="q-header">
-          <div class="q-num">16</div>
-          <span class="q-title">其他想补充的设定</span>
+          <div class="q-num">29</div>
+          <span class="q-title">参考作品 / 画风参考</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <p class="q-hint">💡 帮助 AI 理解你想要的视觉风格</p>
+        <input class="q-input" id="q-reference" placeholder="例如：《原神》画风、吉卜力风格、《电锯人》调性..." oninput="updateProgress()" />
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">30</div>
+          <span class="q-title">其他补充设定</span>
           <span class="q-optional">可选</span>
         </div>
         <textarea class="q-textarea" id="q-extra" placeholder="任何你想告诉 AI 的内容，越详细越好..." oninput="updateProgress()"></textarea>
+      </div>
+
+
+      <div class="section-title">🎭 声音与语言</div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">31</div>
+          <span class="q-title">声线 / 音色特征</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <div class="options-row" data-field="voicetype">
+          <button class="opt-btn" onclick="selectOpt(this,'voicetype')">清亮悦耳</button>
+          <button class="opt-btn" onclick="selectOpt(this,'voicetype')">低沉磁性</button>
+          <button class="opt-btn" onclick="selectOpt(this,'voicetype')">沙哑沧桑</button>
+          <button class="opt-btn" onclick="selectOpt(this,'voicetype')">温润柔和</button>
+          <button class="opt-btn" onclick="selectOpt(this,'voicetype')">稚嫩童声</button>
+          <button class="opt-btn" onclick="selectOpt(this,'voicetype')">空灵飘渺</button>
+          <button class="opt-btn" onclick="selectOpt(this,'voicetype')">冷冽锋利</button>
+        </div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">32</div>
+          <span class="q-title">说话方式 / 语癖</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <div class="options-row" data-field="speakstyle">
+          <button class="opt-btn" onclick="selectOpt(this,'speakstyle')">简洁利落</button>
+          <button class="opt-btn" onclick="selectOpt(this,'speakstyle')">啰嗦话痨</button>
+          <button class="opt-btn" onclick="selectOpt(this,'speakstyle')">文绉绉/古风</button>
+          <button class="opt-btn" onclick="selectOpt(this,'speakstyle')">粗鲁直白</button>
+          <button class="opt-btn" onclick="selectOpt(this,'speakstyle')">温柔客气</button>
+          <button class="opt-btn" onclick="selectOpt(this,'speakstyle')">讽刺毒舌</button>
+          <button class="opt-btn" onclick="selectOpt(this,'speakstyle')">沉默寡言</button>
+          <button class="opt-btn" onclick="selectOpt(this,'speakstyle')">说话带刺</button>
+        </div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">33</div>
+          <span class="q-title">签名台词 / 代表语句</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <p class="q-hint">💡 角色标志性的一句话，让人记住他的声音</p>
+        <input class="q-input" id="q-voice" placeholder="例如：&quot;这就是我的忍道！&quot;、&quot;真相只有一个&quot;、&quot;你还差得远呢&quot;..." oninput="updateProgress()" />
+      </div>
+
+      <div class="section-title">🌟 象征与主题</div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">34</div>
+          <span class="q-title">代表色</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <p class="q-hint">💡 角色给人的第一印象色，影响画面主色调</p>
+        <div class="options-row" data-field="repcolor">
+          <button class="opt-btn" onclick="selectOpt(this,'repcolor')">❤️ 红色</button>
+          <button class="opt-btn" onclick="selectOpt(this,'repcolor')">💙 蓝色</button>
+          <button class="opt-btn" onclick="selectOpt(this,'repcolor')">🖤 黑色</button>
+          <button class="opt-btn" onclick="selectOpt(this,'repcolor')">🤍 白色</button>
+          <button class="opt-btn" onclick="selectOpt(this,'repcolor')">💛 金色</button>
+          <button class="opt-btn" onclick="selectOpt(this,'repcolor')">💜 紫色</button>
+          <button class="opt-btn" onclick="selectOpt(this,'repcolor')">💚 绿色</button>
+          <button class="opt-btn" onclick="selectOpt(this,'repcolor')">🩶 银色</button>
+          <button class="opt-btn" onclick="selectOpt(this,'repcolor')">🩷 粉色</button>
+        </div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">35</div>
+          <span class="q-title">象征物 / 图腾 / 代表动物</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <p class="q-hint">💡 什么能代表这个角色的灵魂？</p>
+        <input class="q-input" id="q-symbol" placeholder="例如：孤狼、蝴蝶、破碎的水晶、燃烧的凤凰、月光..." oninput="updateProgress()" />
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">36</div>
+          <span class="q-title">代表元素 / 季节</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <div class="options-row" data-field="element">
+          <button class="opt-btn" onclick="selectOpt(this,'element')">🌸 春 · 生机</button>
+          <button class="opt-btn" onclick="selectOpt(this,'element')">☀️ 夏 · 热烈</button>
+          <button class="opt-btn" onclick="selectOpt(this,'element')">🍂 秋 · 萧瑟</button>
+          <button class="opt-btn" onclick="selectOpt(this,'element')">❄️ 冬 · 凛冽</button>
+          <button class="opt-btn" onclick="selectOpt(this,'element')">🔥 火 · 灼烧</button>
+          <button class="opt-btn" onclick="selectOpt(this,'element')">💧 水 · 流动</button>
+          <button class="opt-btn" onclick="selectOpt(this,'element')">🌪️ 风 · 自由</button>
+          <button class="opt-btn" onclick="selectOpt(this,'element')">🪨 土 · 厚重</button>
+          <button class="opt-btn" onclick="selectOpt(this,'element')">☀️ 光 · 神圣</button>
+          <button class="opt-btn" onclick="selectOpt(this,'element')">🌑 暗 · 深渊</button>
+        </div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">37</div>
+          <span class="q-title">核心主题（可多选）</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <div class="options-row" data-field="theme" data-multi="true">
+          <button class="opt-btn" onclick="selectMulti(this,'theme')">🛡️ 救赎</button>
+          <button class="opt-btn" onclick="selectMulti(this,'theme')">⚔️ 复仇</button>
+          <button class="opt-btn" onclick="selectMulti(this,'theme')">🌱 成长</button>
+          <button class="opt-btn" onclick="selectMulti(this,'theme')">🤝 守护</button>
+          <button class="opt-btn" onclick="selectMulti(this,'theme')">🕊️ 自由</button>
+          <button class="opt-btn" onclick="selectMulti(this,'theme')">🗺️ 探索</button>
+          <button class="opt-btn" onclick="selectMulti(this,'theme')">💔 牺牲</button>
+          <button class="opt-btn" onclick="selectMulti(this,'theme')">🔄 循环/宿命</button>
+        </div>
+      </div>
+
+      <div class="section-title">💫 故事弧光</div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">38</div>
+          <span class="q-title">角色当前状态</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <p class="q-hint">💡 故事开始时，角色处于什么阶段？</p>
+        <div class="options-row" data-field="curstate">
+          <button class="opt-btn" onclick="selectOpt(this,'curstate')">巅峰时期</button>
+          <button class="opt-btn" onclick="selectOpt(this,'curstate')">成长上升期</button>
+          <button class="opt-btn" onclick="selectOpt(this,'curstate')">人生低谷</button>
+          <button class="opt-btn" onclick="selectOpt(this,'curstate')">隐居退隐</button>
+          <button class="opt-btn" onclick="selectOpt(this,'curstate')">迷失方向</button>
+          <button class="opt-btn" onclick="selectOpt(this,'curstate')">初出茅庐</button>
+        </div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">39</div>
+          <span class="q-title">人生目标 / 终极愿望</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <textarea class="q-textarea" id="q-goal" placeholder="角色最想达成的事是什么？&#10;例如：成为最强的剑士、找到失散的亲人、推翻腐败的帝国..." oninput="updateProgress()"></textarea>
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">40</div>
+          <span class="q-title">核心冲突 / 最大困境</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <textarea class="q-textarea" id="q-conflict" placeholder="角色面临的最大矛盾或困境？&#10;例如：想要守护一切却力量不够、在正义与私情间挣扎、背负诅咒寻找解脱..." oninput="updateProgress()"></textarea>
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">41</div>
+          <span class="q-title">角色弧光 / 成长轨迹</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <div class="options-row" data-field="arc">
+          <button class="opt-btn" onclick="selectOpt(this,'arc')">正面成长（克服缺陷）</button>
+          <button class="opt-btn" onclick="selectOpt(this,'arc')">悲剧堕落（英雄变恶龙）</button>
+          <button class="opt-btn" onclick="selectOpt(this,'arc')">坚守不变（在变化中不动摇）</button>
+          <button class="opt-btn" onclick="selectOpt(this,'arc')">循环往复（走不出的命运）</button>
+          <button class="opt-btn" onclick="selectOpt(this,'arc')">救赎重生（从黑暗走向光明）</button>
+          <button class="opt-btn" onclick="selectOpt(this,'arc')">觉醒突破（发现真实自我）</button>
+        </div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">42</div>
+          <span class="q-title">画面光照 / 氛围偏好</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <p class="q-hint">💡 影响 AI 生成画面的光影氛围</p>
+        <div class="options-row" data-field="lighting">
+          <button class="opt-btn" onclick="selectOpt(this,'lighting')">☀️ 明亮自然光</button>
+          <button class="opt-btn" onclick="selectOpt(this,'lighting')">🌅 黄金时刻/逆光</button>
+          <button class="opt-btn" onclick="selectOpt(this,'lighting')">🌙 冷色月光</button>
+          <button class="opt-btn" onclick="selectOpt(this,'lighting')">🕯️ 暗调烛光</button>
+          <button class="opt-btn" onclick="selectOpt(this,'lighting')">💡 霓虹/赛博光</button>
+          <button class="opt-btn" onclick="selectOpt(this,'lighting')">⚡ 戏剧性强光</button>
+          <button class="opt-btn" onclick="selectOpt(this,'lighting')">🌫️ 柔光/薄雾</button>
+          <button class="opt-btn" onclick="selectOpt(this,'lighting')">🔥 火光/烈焰</button>
+        </div>
+      </div>
+
+
+      <div class="section-title">🎨 画风与构图</div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">43</div>
+          <span class="q-title">画风 / 艺术风格</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <p class="q-hint">💡 决定画面整体视觉风格，是 prompt 最重要维度之一</p>
+        <div class="options-row" data-field="artstyle">
+          <button class="opt-btn" onclick="selectOpt(this,'artstyle')">日系赛璐璐动漫</button>
+          <button class="opt-btn" onclick="selectOpt(this,'artstyle')">韩系半厚涂</button>
+          <button class="opt-btn" onclick="selectOpt(this,'artstyle')">美式卡通</button>
+          <button class="opt-btn" onclick="selectOpt(this,'artstyle')">写实CG/厚涂</button>
+          <button class="opt-btn" onclick="selectOpt(this,'artstyle')">新海诚电影风</button>
+          <button class="opt-btn" onclick="selectOpt(this,'artstyle')">像素艺术</button>
+          <button class="opt-btn" onclick="selectOpt(this,'artstyle')">水彩手绘风</button>
+          <button class="opt-btn" onclick="selectOpt(this,'artstyle')">赛博朋克</button>
+          <button class="opt-btn" onclick="selectOpt(this,'artstyle')">蒸汽朋克</button>
+          <button class="opt-btn" onclick="selectOpt(this,'artstyle')">古风水墨</button>
+          <button class="opt-btn" onclick="selectOpt(this,'artstyle')">哥特暗黑</button>
+          <button class="opt-btn" onclick="selectOpt(this,'artstyle')">极简扁平</button>
+        </div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">44</div>
+          <span class="q-title">画面构图 / 镜头距离</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <p class="q-hint">💡 决定角色的画面占比和构图方式</p>
+        <div class="options-row" data-field="composition">
+          <button class="opt-btn" onclick="selectOpt(this,'composition')">🔍 面部特写</button>
+          <button class="opt-btn" onclick="selectOpt(this,'composition')">🧍 半身像</button>
+          <button class="opt-btn" onclick="selectOpt(this,'composition')">🕴️ 全身立绘</button>
+          <button class="opt-btn" onclick="selectOpt(this,'composition')">🌆 场景+人物</button>
+          <button class="opt-btn" onclick="selectOpt(this,'composition')">🎬 电影宽幅</button>
+          <button class="opt-btn" onclick="selectOpt(this,'composition')">📐 对角线构图</button>
+          <button class="opt-btn" onclick="selectOpt(this,'composition')">🔄 仰视/低角度</button>
+          <button class="opt-btn" onclick="selectOpt(this,'composition')">🦅 俯视/鸟瞰</button>
+        </div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">45</div>
+          <span class="q-title">场景 / 背景设定</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <p class="q-hint">💡 角色置于什么环境中？直接影响画面叙事感</p>
+        <input class="q-input" id="q-scene" placeholder="例如：樱花飘落的古寺、霓虹闪烁的赛博街道、废墟中的战场、星空下的草原..." oninput="updateProgress()" />
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">46</div>
+          <span class="q-title">动作 / 姿态</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <div class="options-row" data-field="pose">
+          <button class="opt-btn" onclick="selectOpt(this,'pose')">静态站立</button>
+          <button class="opt-btn" onclick="selectOpt(this,'pose')">优雅坐姿</button>
+          <button class="opt-btn" onclick="selectOpt(this,'pose')">漫步行走</button>
+          <button class="opt-btn" onclick="selectOpt(this,'pose')">高速奔跑</button>
+          <button class="opt-btn" onclick="selectOpt(this,'pose')">战斗姿态</button>
+          <button class="opt-btn" onclick="selectOpt(this,'pose')">回眸一瞥</button>
+          <button class="opt-btn" onclick="selectOpt(this,'pose')">闭目沉思</button>
+          <button class="opt-btn" onclick="selectOpt(this,'pose')">空中漂浮</button>
+          <button class="opt-btn" onclick="selectOpt(this,'pose')">持武器/施法</button>
+          <button class="opt-btn" onclick="selectOpt(this,'pose')">背对/剪影</button>
+        </div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">47</div>
+          <span class="q-title">画质增强标签（可多选）</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <p class="q-hint">💡 SD/NovelAI 常用高质量标签，提升出图精度</p>
+        <div class="options-row" data-field="quality" data-multi="true">
+          <button class="opt-btn" onclick="selectMulti(this,'quality')">masterpiece</button>
+          <button class="opt-btn" onclick="selectMulti(this,'quality')">best quality</button>
+          <button class="opt-btn" onclick="selectMulti(this,'quality')">ultra detailed</button>
+          <button class="opt-btn" onclick="selectMulti(this,'quality')">4k/8k resolution</button>
+          <button class="opt-btn" onclick="selectMulti(this,'quality')">cinematic lighting</button>
+          <button class="opt-btn" onclick="selectMulti(this,'quality')">intricate details</button>
+          <button class="opt-btn" onclick="selectMulti(this,'quality')">sharp focus</button>
+          <button class="opt-btn" onclick="selectMulti(this,'quality')">ray tracing</button>
+        </div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">48</div>
+          <span class="q-title">画面情绪 / 氛围基调</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <p class="q-hint">💡 给画面注入情感色彩，让 AI 理解你想要的情绪</p>
+        <div class="options-row" data-field="mood">
+          <button class="opt-btn" onclick="selectOpt(this,'mood')">😌 宁静祥和</button>
+          <button class="opt-btn" onclick="selectOpt(this,'mood')">🔥 热血激昂</button>
+          <button class="opt-btn" onclick="selectOpt(this,'mood')">😢 忧伤惆怅</button>
+          <button class="opt-btn" onclick="selectOpt(this,'mood')">🌑 黑暗压抑</button>
+          <button class="opt-btn" onclick="selectOpt(this,'mood')">🔮 神秘诡谲</button>
+          <button class="opt-btn" onclick="selectOpt(this,'mood')">💕 浪漫温柔</button>
+          <button class="opt-btn" onclick="selectOpt(this,'mood')">🎊 欢乐雀跃</button>
+          <button class="opt-btn" onclick="selectOpt(this,'mood')">⚡ 紧张刺激</button>
+          <button class="opt-btn" onclick="selectOpt(this,'mood')">👻 阴森恐怖</button>
+          <button class="opt-btn" onclick="selectOpt(this,'mood')">🌟 神圣庄严</button>
+        </div>
       </div>
 
     </div><!-- end form-scroll -->
@@ -613,6 +1158,25 @@
         <div class="oc-tags" id="result-tags"></div>
       </div>
 
+      <!-- AI 生成图片 -->
+      <div class="image-section" id="image-section" style="display:none;">
+        <div class="image-loading" id="image-loading">
+          <div class="img-spinner"></div>
+          <div>图片生成中...</div>
+          <div class="image-loading-hint">正在将你的角色转化为画面</div>
+        </div>
+        <div class="image-result" id="image-result" style="display:none;">
+          <img id="generated-image" src="" alt="AI生成图" />
+          <div class="image-actions">
+            <button class="btn-outline" onclick="downloadImage()">💾 保存图片</button>
+            <button class="btn-outline" onclick="copyImageUrl()">🔗 复制链接</button>
+          </div>
+        </div>
+        <div class="image-failed" id="image-failed" style="display:none;">
+          ⚠️ 图片生成失败，可重新生成
+        </div>
+      </div>
+
       <!-- 风格选择 Tab -->
       <div class="prompt-tabs" id="prompt-tabs">
         <button class="prompt-tab active" data-tab="standard" onclick="switchTab(this,'standard')">标准英文</button>
@@ -636,8 +1200,8 @@
 
       <!-- 中文设定总结（单独展示区） -->
       <div class="card" id="summary-section" style="display:none;">
-        <div style="font-size:14px;font-weight:700;color:var(--pink-deep);margin-bottom:10px;">📖 角色设定总结</div>
-        <div style="font-size:14px;color:#334155;line-height:1.8;" id="summary-text"></div>
+        <div style="font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:10px;">📖 角色设定总结</div>
+        <div style="font-size:14px;color:var(--text-secondary);line-height:1.8;" id="summary-text"></div>
       </div>
 
     </div><!-- end result-scroll -->
@@ -670,6 +1234,8 @@
   const multiSel = {};     // 多选
   let promptResults = {};  // AI 返回结果
   let currentTab = 'standard';
+  let currentImageUrl = null;   // 生成的图片 URL
+  let imagePollTimer = null;    // 轮询定时器
 
   const tabTitles = {
     standard: '🎨 英文提示词（通用）',
@@ -687,6 +1253,90 @@
   function goHome()   { showPage('page-home'); }
   function goToForm() { showPage('page-form'); }
   function newOC()    { location.reload(); }
+
+  // ====== 图片轮询 ======
+  function startImagePolling(taskId) {
+    // 显示加载状态
+    const section = document.getElementById('image-section');
+    const loadingEl = document.getElementById('image-loading');
+    const resultEl = document.getElementById('image-result');
+    const failedEl = document.getElementById('image-failed');
+
+    section.style.display = 'block';
+    loadingEl.style.display = 'block';
+    resultEl.style.display = 'none';
+    failedEl.style.display = 'none';
+    currentImageUrl = null;
+
+    // 清除旧定时器
+    if (imagePollTimer) clearInterval(imagePollTimer);
+
+    let attempts = 0;
+    const maxAttempts = 40; // 最多轮询 40 次 (约 200 秒)
+
+    imagePollTimer = setInterval(async () => {
+      attempts++;
+      try {
+        const resp = await fetch(`/api/check-image?task_id=${taskId}`);
+        const imgData = await resp.json();
+
+        if (imgData.status === 'done') {
+          clearInterval(imagePollTimer);
+          imagePollTimer = null;
+          currentImageUrl = imgData.imageUrl;
+          showGeneratedImage(imgData.imageUrl);
+        } else if (imgData.status === 'failed' || attempts >= maxAttempts) {
+          clearInterval(imagePollTimer);
+          imagePollTimer = null;
+          showImageFailed();
+        }
+        // status === 'generating' → 继续等待
+      } catch (e) {
+        // 网络异常不中断，继续轮询
+      }
+    }, 5000);
+  }
+
+  function showGeneratedImage(url) {
+    document.getElementById('image-loading').style.display = 'none';
+    document.getElementById('image-failed').style.display = 'none';
+    const resultEl = document.getElementById('image-result');
+    resultEl.style.display = 'block';
+    document.getElementById('generated-image').src = url;
+  }
+
+  function showImageFailed() {
+    document.getElementById('image-loading').style.display = 'none';
+    document.getElementById('image-result').style.display = 'none';
+    document.getElementById('image-failed').style.display = 'block';
+  }
+
+  function hideImageSection() {
+    document.getElementById('image-section').style.display = 'none';
+  }
+
+  function downloadImage() {
+    if (!currentImageUrl) return;
+    const a = document.createElement('a');
+    a.href = currentImageUrl;
+    a.download = 'oc-image.png';
+    // 跨域图片需要先转 blob
+    fetch(currentImageUrl)
+      .then(r => r.blob())
+      .then(blob => {
+        a.href = URL.createObjectURL(blob);
+        a.click();
+        URL.revokeObjectURL(a.href);
+      })
+      .catch(() => {
+        window.open(currentImageUrl, '_blank');
+      });
+  }
+
+  function copyImageUrl() {
+    if (!currentImageUrl) return;
+    copyText(currentImageUrl);
+  }
 
   // ====== 选项交互 ======
   function selectOpt(btn, field) {
@@ -711,9 +1361,9 @@
 
   // ====== 进度更新 ======
   function updateProgress() {
-    const inputs = ['q-name','q-appearance','q-inner','q-job','q-backstory','q-ability','q-item','q-extra'];
+    const inputs = ['q-name','q-appearance','q-inner','q-likes','q-dislikes','q-habits','q-job','q-backstory','q-relations','q-ability','q-accessories','q-item','q-birthplace','q-reference','q-extra','q-voice','q-symbol','q-goal','q-conflict','q-scene'];
     let filled = 0;
-    const total = 16;
+    const total = 48;
     inputs.forEach(id => { if (document.getElementById(id)?.value.trim()) filled++; });
     Object.values(selections).forEach(v => { if (v) filled++; });
     Object.values(multiSel).forEach(arr => { if (arr.length > 0) filled++; });
@@ -729,19 +1379,51 @@
       '角色名字':     document.getElementById('q-name')?.value.trim(),
       '性别设定':     selections['gender'],
       '年龄感':       selections['age'],
-      '外貌描述':     document.getElementById('q-appearance')?.value.trim(),
+      '身高体型':     selections['bodytype'],
       '发色':         selections['haircolor'],
       '发型':         selections['hairstyle'],
+      '眼睛特征':     selections['eyecolor'],
+      '外貌细节':     document.getElementById('q-appearance')?.value.trim(),
       '性格特征':     (multiSel['personality'] || []).join('、'),
+      '人格类型':     selections['mbti'],
+      '喜好与兴趣':   document.getElementById('q-likes')?.value.trim(),
+      '讨厌恐惧':     document.getElementById('q-dislikes')?.value.trim(),
       '内心世界':     document.getElementById('q-inner')?.value.trim(),
+      '行为习惯':     document.getElementById('q-habits')?.value.trim(),
       '世界观':       selections['world'],
+      '种族物种':     selections['race'],
       '职业身份':     document.getElementById('q-job')?.value.trim(),
+      '社会地位':     selections['status'],
+      '出身地':       document.getElementById('q-birthplace')?.value.trim(),
       '背景故事':     document.getElementById('q-backstory')?.value.trim(),
+      '人际关系':     document.getElementById('q-relations')?.value.trim(),
       '特殊能力':     document.getElementById('q-ability')?.value.trim(),
+      '能力等级':     selections['powerlevel'],
+      '战斗风格':     selections['fightstyle'],
       '服装风格':     selections['outfit'],
+      '配饰细节':     document.getElementById('q-accessories')?.value.trim(),
       '标志性物品':   document.getElementById('q-item')?.value.trim(),
       '画面氛围':     (multiSel['mood'] || []).join('、'),
+      '画风参考':     document.getElementById('q-reference')?.value.trim(),
       '其他设定':     document.getElementById('q-extra')?.value.trim(),
+      '声线特征':     selections['voicetype'],
+      '说话方式':     selections['speakstyle'],
+      '签名台词':     document.getElementById('q-voice')?.value.trim(),
+      '代表色':       selections['repcolor'],
+      '象征图腾':     document.getElementById('q-symbol')?.value.trim(),
+      '代表元素':     selections['element'],
+      '核心主题':     (multiSel['theme'] || []).join('、'),
+      '当前状态':     selections['curstate'],
+      '人生目标':     document.getElementById('q-goal')?.value.trim(),
+      '核心冲突':     document.getElementById('q-conflict')?.value.trim(),
+      '角色弧光':     selections['arc'],
+      '画面光照':     selections['lighting'],
+      '画风风格':     selections['artstyle'],
+      '画面构图':     selections['composition'],
+      '场景设定':     document.getElementById('q-scene')?.value.trim(),
+      '动作姿态':     selections['pose'],
+      '画质标签':     (multiSel['quality'] || []).join('、'),
+      '画面情绪':     selections['mood'],
     };
 
     let ocText = '';
@@ -776,6 +1458,14 @@
 
       promptResults = data.result;
       buildResultPage(fields);
+
+      // 如果有生图任务，开始轮询
+      if (data.imageTaskId) {
+        startImagePolling(data.imageTaskId);
+      } else {
+        hideImageSection();
+      }
+
       showPage('page-result');
     } catch (err) {
       showToast('⚠️ ' + (err.message || '网络错误，请重试'));
