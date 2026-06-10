@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>OC Studio · 角色创作器</title>
+  <style>
+    /* ====== 重置 & 基础 ====== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --pink:       #EC4899;
+      --pink-dark:  #BE185D;
+      --pink-deep:  #831843;
+      --pink-light: #FBCFE8;
+      --pink-pale:  #FDF2F8;
+      --orange:     #EA580C;
+      --slate:      #64748B;
+      --white:      #FFFFFF;
+      --grad-main:  linear-gradient(135deg, #EC4899 0%, #F97316 100%);
+      --grad-hero:  linear-gradient(160deg, #BE185D 0%, #EC4899 50%, #FBCFE8 100%);
+      --shadow-pink: 0 8px 24px rgba(236,72,153,0.25);
+      --shadow-card: 0 4px 16px rgba(236,72,153,0.10);
+      --radius-btn:  28px;
+      --radius-card: 20px;
+      --radius-input:14px;
+    }
+    html, body {
+      height: 100%; font-family: -apple-system, 'SF Pro Display', 'PingFang SC', 'Helvetica Neue', sans-serif;
+      background: var(--pink-pale); color: #1E293B; -webkit-font-smoothing: antialiased;
+      overscroll-behavior: none;
+    }
+
+    /* ====== 页面容器（模拟手机宽度） ====== */
+    .app-shell {
+      max-width: 430px; margin: 0 auto; min-height: 100vh;
+      background: var(--pink-pale); position: relative; overflow: hidden;
+    }
+
+    /* ====== 页面切换 ====== */
+    .page { display: none; flex-direction: column; min-height: 100vh; animation: fadeIn .3s ease; }
+    .page.active { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ====== 导航栏 ====== */
+    .nav-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px; background: var(--white);
+      box-shadow: 0 2px 12px rgba(236,72,153,0.08); position: sticky; top: 0; z-index: 100;
+    }
+    .nav-back {
+      width: 36px; height: 36px; border-radius: 18px; background: var(--pink-pale);
+      border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 18px; color: var(--pink); transition: all .2s;
+    }
+    .nav-back:active { transform: scale(.92); }
+    .nav-title { font-size: 17px; font-weight: 700; color: var(--pink-deep); }
+    .nav-action {
+      height: 32px; padding: 0 14px; border-radius: 16px; background: var(--pink-pale);
+      border: 1.5px solid var(--pink-light); color: var(--pink); font-size: 13px;
+      font-weight: 500; cursor: pointer; transition: all .2s;
+    }
+    .nav-action:active { opacity: .7; }
+    .nav-placeholder { width: 36px; }
+
+    /* ====== 按钮 ====== */
+    .btn-main {
+      width: 100%; height: 56px; border-radius: var(--radius-btn);
+      background: var(--grad-main); border: none; color: var(--white);
+      font-size: 17px; font-weight: 700; cursor: pointer;
+      box-shadow: var(--shadow-pink); transition: all .2s; letter-spacing: .5px;
+    }
+    .btn-main:active { transform: scale(.97); opacity: .9; }
+    .btn-outline {
+      flex: 1; height: 48px; border-radius: 24px; background: var(--white);
+      border: 1.5px solid var(--pink-light); color: var(--pink);
+      font-size: 14px; font-weight: 500; cursor: pointer; transition: all .2s;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .btn-outline:active { transform: scale(.96); }
+    .btn-ghost {
+      width: 100%; height: 44px; background: transparent; border: none;
+      color: var(--pink); font-size: 14px; cursor: pointer; transition: opacity .2s;
+    }
+    .btn-ghost:active { opacity: .6; }
+
+    /* ====== 卡片 ====== */
+    .card {
+      background: var(--white); border-radius: var(--radius-card);
+      box-shadow: var(--shadow-card); padding: 18px;
+    }
+
+    /* ==================== PAGE 1: 首页 ==================== */
+    #page-home .hero {
+      background: var(--grad-hero); padding: 48px 24px 40px;
+      display: flex; flex-direction: column; align-items: center; gap: 16px;
+    }
+    #page-home .hero-icon {
+      width: 88px; height: 88px; border-radius: 28px;
+      background: var(--grad-main); display: flex; align-items: center; justify-content: center;
+      font-size: 42px; box-shadow: var(--shadow-pink);
+    }
+    #page-home .hero h1 {
+      font-size: 30px; font-weight: 800; color: var(--white); text-align: center; letter-spacing: -.5px;
+    }
+    #page-home .hero p {
+      font-size: 15px; color: rgba(255,255,255,.85); text-align: center; line-height: 1.5; max-width: 260px;
+    }
+
+    #page-home .home-content { padding: 24px 20px; display: flex; flex-direction: column; gap: 20px; }
+    .feature-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+    .feature-card {
+      background: var(--white); border-radius: 16px; padding: 16px 8px;
+      box-shadow: var(--shadow-card); display: flex; flex-direction: column;
+      align-items: center; gap: 8px;
+    }
+    .feature-card .icon { font-size: 28px; }
+    .feature-card span { font-size: 13px; font-weight: 600; color: var(--pink-deep); }
+    .home-desc {
+      font-size: 13px; color: var(--slate); text-align: center; line-height: 1.7;
+      padding: 0 8px;
+    }
+
+    /* ==================== PAGE 2: 问卷 ==================== */
+    #page-form .progress-wrap {
+      background: var(--white); padding: 10px 20px 14px;
+      border-bottom: 1px solid #FFF0F8;
+    }
+    #page-form .progress-label {
+      font-size: 12px; color: var(--slate); margin-bottom: 6px;
+    }
+    .progress-track {
+      height: 6px; background: var(--pink-light); border-radius: 3px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; background: var(--grad-main); border-radius: 3px;
+      transition: width .4s ease;
+    }
+
+    .form-scroll {
+      flex: 1; overflow-y: auto; padding: 16px 16px 120px;
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .form-scroll::-webkit-scrollbar { display: none; }
+
+    /* 分区标题 */
+    .section-title {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 15px; font-weight: 700; color: var(--pink-deep); margin-top: 6px;
+    }
+    .section-title::before {
+      content: ''; display: block; width: 4px; height: 18px; border-radius: 2px;
+      background: var(--grad-main);
+    }
+
+    /* 问题卡片 */
+    .q-card { background: var(--white); border-radius: var(--radius-card); padding: 16px; box-shadow: var(--shadow-card); }
+    .q-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+    .q-num {
+      width: 22px; height: 22px; border-radius: 11px; background: var(--grad-main);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 600; color: var(--white); flex-shrink: 0;
+    }
+    .q-title { font-size: 15px; font-weight: 600; color: var(--pink-deep); flex: 1; }
+    .q-optional {
+      font-size: 11px; color: var(--slate); background: #F1F5F9;
+      padding: 2px 8px; border-radius: 8px;
+    }
+    .q-hint { font-size: 12px; color: var(--pink); margin-bottom: 10px; }
+
+    /* 输入框 */
+    .q-input, .q-textarea {
+      width: 100%; border: 1.5px solid var(--pink-light); border-radius: var(--radius-input);
+      background: var(--pink-pale); font-size: 14px; color: #1E293B;
+      font-family: inherit; transition: border-color .2s; outline: none;
+      -webkit-appearance: none;
+    }
+    .q-input { height: 44px; padding: 0 14px; }
+    .q-textarea { padding: 12px 14px; min-height: 88px; resize: none; line-height: 1.6; }
+    .q-input:focus, .q-textarea:focus { border-color: var(--pink); background: var(--white); }
+    .q-input::placeholder, .q-textarea::placeholder { color: #94A3B8; }
+
+    /* 选项按钮 */
+    .options-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .opt-btn {
+      height: 36px; padding: 0 16px; border-radius: 18px;
+      background: var(--pink-pale); border: 1.5px solid var(--pink-light);
+      color: var(--pink-deep); font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: all .18s; white-space: nowrap;
+    }
+    .opt-btn.selected {
+      background: var(--grad-main); border-color: transparent;
+      color: var(--white); box-shadow: 0 4px 12px rgba(236,72,153,.3);
+    }
+    .opt-btn:active { transform: scale(.95); }
+
+    /* 底部操作区（固定） */
+    .form-footer {
+      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 100%; max-width: 430px; padding: 16px 20px 28px;
+      background: linear-gradient(0deg, var(--pink-pale) 80%, transparent);
+      display: flex; flex-direction: column; gap: 10px;
+    }
+
+    /* ==================== PAGE 3: 结果 ==================== */
+    .result-scroll {
+      flex: 1; overflow-y: auto; padding: 16px 16px 100px;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .result-scroll::-webkit-scrollbar { display: none; }
+
+    /* OC 摘要卡 */
+    .oc-summary-card {
+      border-radius: var(--radius-card); padding: 20px;
+      background: var(--grad-hero); color: var(--white);
+    }
+    .oc-summary-card .oc-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .oc-avatar {
+      width: 48px; height: 48px; border-radius: 24px;
+      background: rgba(255,255,255,.25); display: flex; align-items: center; justify-content: center;
+      font-size: 24px; flex-shrink: 0;
+    }
+    .oc-name { font-size: 18px; font-weight: 800; }
+    .oc-meta { font-size: 12px; color: rgba(255,255,255,.75); margin-top: 2px; }
+    .oc-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .oc-tag {
+      height: 24px; padding: 0 10px; border-radius: 12px;
+      background: rgba(255,255,255,.2); font-size: 11px; color: var(--white);
+      display: flex; align-items: center;
+    }
+
+    /* 提示词标签页 */
+    .prompt-tabs {
+      display: flex; background: var(--white); border-radius: 22px;
+      padding: 4px; gap: 0; box-shadow: var(--shadow-card);
+    }
+    .prompt-tab {
+      flex: 1; height: 36px; border-radius: 18px; border: none;
+      background: transparent; font-size: 13px; font-weight: 500;
+      color: var(--slate); cursor: pointer; transition: all .2s;
+    }
+    .prompt-tab.active { background: var(--grad-main); color: var(--white); }
+
+    /* 提示词内容卡 */
+    .prompt-card { background: var(--white); border-radius: var(--radius-card); padding: 16px; box-shadow: var(--shadow-card); }
+    .prompt-card-header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
+    }
+    .prompt-card-title { font-size: 13px; font-weight: 600; color: var(--pink-deep); }
+    .copy-small-btn {
+      height: 28px; padding: 0 12px; border-radius: 14px;
+      background: var(--pink-pale); border: 1.5px solid var(--pink-light);
+      color: var(--pink); font-size: 12px; cursor: pointer; transition: all .2s;
+    }
+    .copy-small-btn:active { transform: scale(.95); }
+    .prompt-text-box {
+      background: var(--pink-pale); border-radius: 12px; padding: 14px;
+      font-size: 13px; color: var(--pink-deep); line-height: 1.8;
+      word-break: break-word; min-height: 80px;
+    }
+    .prompt-footer {
+      display: flex; justify-content: space-between; align-items: center; margin-top: 10px;
+    }
+    .token-badge {
+      font-size: 11px; color: var(--slate); background: #F1F5F9;
+      padding: 3px 10px; border-radius: 10px;
+    }
+    .regen-btn {
+      font-size: 11px; color: var(--pink); background: none; border: none; cursor: pointer;
+    }
+
+    /* 更多风格 */
+    .style-cards { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+    .style-card {
+      background: var(--white); border-radius: 14px; padding: 14px 8px;
+      box-shadow: var(--shadow-card); display: flex; flex-direction: column;
+      align-items: center; gap: 4px; cursor: pointer; transition: all .2s;
+      border: 1.5px solid transparent;
+    }
+    .style-card.active { border-color: var(--pink); background: #FFF0F8; }
+    .style-card:active { transform: scale(.96); }
+    .style-card-label { font-size: 12px; font-weight: 600; color: var(--pink-deep); text-align: center; }
+    .style-card-sub { font-size: 10px; color: var(--slate); }
+
+    /* 结果底部操作 */
+    .result-footer {
+      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 100%; max-width: 430px; padding: 16px 20px 28px;
+      background: linear-gradient(0deg, var(--pink-pale) 75%, transparent);
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .secondary-row { display: flex; gap: 12px; }
+
+    /* ====== 加载遮罩 ====== */
+    .loading-overlay {
+      position: fixed; inset: 0; background: rgba(253,242,248,.92);
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      z-index: 999; gap: 20px; backdrop-filter: blur(8px);
+    }
+    .loading-overlay.show { display: flex; }
+    .loading-spinner {
+      width: 56px; height: 56px; border-radius: 50%;
+      border: 4px solid var(--pink-light);
+      border-top-color: var(--pink); animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-size: 16px; font-weight: 600; color: var(--pink-deep); }
+    .loading-sub { font-size: 13px; color: var(--slate); }
+
+    /* ====== Toast 提示 ====== */
+    .toast {
+      position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: #1E293B; color: var(--white); padding: 10px 20px; border-radius: 20px;
+      font-size: 14px; opacity: 0; transition: all .3s; pointer-events: none; white-space: nowrap;
+      z-index: 1000;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ====== 响应式（桌面浏览器也好看） ====== */
+    @media (min-width: 430px) {
+      .app-shell {
+        box-shadow: 0 0 60px rgba(236,72,153,.15);
+        border-radius: 0; margin-top: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- ==================== PAGE 1: 首页 ==================== -->
+  <div id="page-home" class="page active">
+    <div class="hero">
+      <div class="hero-icon">✨</div>
+      <h1>OC Studio</h1>
+      <p>描述你的角色，一键生成专属 AI 提示词</p>
+    </div>
+    <div class="home-content">
+      <div class="feature-row">
+        <div class="feature-card"><span class="icon">📝</span><span>填写问卷</span></div>
+        <div class="feature-card"><span class="icon">🤖</span><span>AI 生成</span></div>
+        <div class="feature-card"><span class="icon">📋</span><span>复制使用</span></div>
+      </div>
+      <button class="btn-main" onclick="goToForm()">开始创作我的 OC ✨</button>
+      <p class="home-desc">支持外貌、性格、背景、技能等 20+ 项设定<br>未填写的选项可随时跳过 → 提交即得提示词</p>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 2: 问卷 ==================== -->
+  <div id="page-form" class="page">
+    <!-- 导航 -->
+    <div class="nav-bar">
+      <button class="nav-back" onclick="goHome()">←</button>
+      <span class="nav-title">创作我的 OC</span>
+      <div class="nav-placeholder"></div>
+    </div>
+    <!-- 进度条 -->
+    <div class="progress-wrap">
+      <div class="progress-label" id="progress-label">已填写 0 项</div>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+    <!-- 问卷内容 -->
+    <div class="form-scroll" id="form-scroll">
+
+      <div class="section-title">📜 基本信息</div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">1</div>
+          <span class="q-title">角色名字</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <input class="q-input" id="q-name" placeholder="输入角色的名字..." oninput="updateProgress()" />
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">2</div>
+          <span class="q-title">性别设定</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <div class="options-row" data-field="gender">
+          <button class="opt-btn" onclick="selectOpt(this,'gender')">女</button>
+          <button class="opt-btn" onclick="selectOpt(this,'gender')">男</button>
+          <button class="opt-btn" onclick="selectOpt(this,'gender')">中性</button>
+          <button class="opt-btn" onclick="selectOpt(this,'gender')">双性</button>
+          <button class="opt-btn" onclick="selectOpt(this,'gender')">无性别</button>
+        </div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">3</div>
+          <span class="q-title">年龄/年龄感</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <div class="options-row" data-field="age">
+          <button class="opt-btn" onclick="selectOpt(this,'age')">少年感（15-18）</button>
+          <button class="opt-btn" onclick="selectOpt(this,'age')">青年感（18-25）</button>
+          <button class="opt-btn" onclick="selectOpt(this,'age')">成熟感（25+）</button>
+          <button class="opt-btn" onclick="selectOpt(this,'age')">神秘/不确定</button>
+        </div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">4</div>
+          <span class="q-title">外貌描述</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <p class="q-hint">💡 描述越详细，提示词越精准</p>
+        <textarea class="q-textarea" id="q-appearance" placeholder="例如：长银发、青色眼睛、白皙皮肤、高挑身材&#10;可以描述发型、眼睛颜色、肤色、身材特征等..." oninput="updateProgress()"></textarea>
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">5</div>
+          <span class="q-title">发色</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <div class="options-row" data-field="haircolor">
+          <button class="opt-btn" onclick="selectOpt(this,'haircolor')">黑发</button>
+          <button class="opt-btn" onclick="selectOpt(this,'haircolor')">褐发</button>
+          <button class="opt-btn" onclick="selectOpt(this,'haircolor')">金发</button>
+          <button class="opt-btn" onclick="selectOpt(this,'haircolor')">银白发</button>
+          <button class="opt-btn" onclick="selectOpt(this,'haircolor')">红发</button>
+          <button class="opt-btn" onclick="selectOpt(this,'haircolor')">蓝发</button>
+          <button class="opt-btn" onclick="selectOpt(this,'haircolor')">渐变色</button>
+          <button class="opt-btn" onclick="selectOpt(this,'haircolor')">其他</button>
+        </div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">6</div>
+          <span class="q-title">发型</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <div class="options-row" data-field="hairstyle">
+          <button class="opt-btn" onclick="selectOpt(this,'hairstyle')">短发</button>
+          <button class="opt-btn" onclick="selectOpt(this,'hairstyle')">中长发</button>
+          <button class="opt-btn" onclick="selectOpt(this,'hairstyle')">长直发</button>
+          <button class="opt-btn" onclick="selectOpt(this,'hairstyle')">长卷发</button>
+          <button class="opt-btn" onclick="selectOpt(this,'hairstyle')">双马尾</button>
+          <button class="opt-btn" onclick="selectOpt(this,'hairstyle')">马尾</button>
+          <button class="opt-btn" onclick="selectOpt(this,'hairstyle')">麻花辫</button>
+          <button class="opt-btn" onclick="selectOpt(this,'hairstyle')">半扎</button>
+        </div>
+      </div>
+
+      <div class="section-title">✨ 性格与内心</div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">7</div>
+          <span class="q-title">性格特征（可多选）</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <div class="options-row" data-field="personality" data-multi="true">
+          <button class="opt-btn" onclick="selectMulti(this,'personality')">💤 寡言冷静</button>
+          <button class="opt-btn" onclick="selectMulti(this,'personality')">🔥 热血激情</button>
+          <button class="opt-btn" onclick="selectMulti(this,'personality')">😈 腹黑反派</button>
+          <button class="opt-btn" onclick="selectMulti(this,'personality')">🌸 温柔体贴</button>
+          <button class="opt-btn" onclick="selectMulti(this,'personality')">⚡ 活泼开朗</button>
+          <button class="opt-btn" onclick="selectMulti(this,'personality')">🌑 孤独神秘</button>
+          <button class="opt-btn" onclick="selectMulti(this,'personality')">👑 高冷骄傲</button>
+          <button class="opt-btn" onclick="selectMulti(this,'personality')">🃏 玩世不恭</button>
+          <button class="opt-btn" onclick="selectMulti(this,'personality')">🧠 理智冷酷</button>
+          <button class="opt-btn" onclick="selectMulti(this,'personality')">💔 内心破碎</button>
+        </div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">8</div>
+          <span class="q-title">内心世界 / 核心伤痛</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <textarea class="q-textarea" id="q-inner" placeholder="角色的内心深处藏着什么？&#10;例如：幼年失去双亲，表面冷漠实则渴望认同..." oninput="updateProgress()"></textarea>
+      </div>
+
+      <div class="section-title">⚔️ 背景与世界观</div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">9</div>
+          <span class="q-title">世界观/所处世界</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <div class="options-row" data-field="world">
+          <button class="opt-btn" onclick="selectOpt(this,'world')">现代都市</button>
+          <button class="opt-btn" onclick="selectOpt(this,'world')">东方玄幻</button>
+          <button class="opt-btn" onclick="selectOpt(this,'world')">西方奇幻</button>
+          <button class="opt-btn" onclick="selectOpt(this,'world')">末世废土</button>
+          <button class="opt-btn" onclick="selectOpt(this,'world')">赛博朋克</button>
+          <button class="opt-btn" onclick="selectOpt(this,'world')">校园日常</button>
+          <button class="opt-btn" onclick="selectOpt(this,'world')">异世界转生</button>
+          <button class="opt-btn" onclick="selectOpt(this,'world')">架空历史</button>
+        </div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">10</div>
+          <span class="q-title">职业 / 身份</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <input class="q-input" id="q-job" placeholder="例如：法师、侦探、学生、佣兵、神明..." oninput="updateProgress()" />
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">11</div>
+          <span class="q-title">背景故事</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <textarea class="q-textarea" id="q-backstory" placeholder="角色的来历和经历是什么？&#10;简单描述即可，几句话就够..." oninput="updateProgress()"></textarea>
+      </div>
+
+      <div class="section-title">🌟 特殊设定</div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">12</div>
+          <span class="q-title">特殊能力 / 技能</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <textarea class="q-textarea" id="q-ability" placeholder="例如：操控火焰、预知未来、时空穿越、剑术大师..." oninput="updateProgress()"></textarea>
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">13</div>
+          <span class="q-title">服装风格</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <div class="options-row" data-field="outfit">
+          <button class="opt-btn" onclick="selectOpt(this,'outfit')">战甲/铠甲</button>
+          <button class="opt-btn" onclick="selectOpt(this,'outfit')">长袍/法衣</button>
+          <button class="opt-btn" onclick="selectOpt(this,'outfit')">现代休闲</button>
+          <button class="opt-btn" onclick="selectOpt(this,'outfit')">制服/校服</button>
+          <button class="opt-btn" onclick="selectOpt(this,'outfit')">古风汉服</button>
+          <button class="opt-btn" onclick="selectOpt(this,'outfit')">华丽礼服</button>
+          <button class="opt-btn" onclick="selectOpt(this,'outfit')">暗黑哥特</button>
+          <button class="opt-btn" onclick="selectOpt(this,'outfit')">机甲科技</button>
+        </div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">14</div>
+          <span class="q-title">标志性物品 / 武器</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <input class="q-input" id="q-item" placeholder="例如：红色大剑、古旧怀表、神秘面具..." oninput="updateProgress()" />
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">15</div>
+          <span class="q-title">想要的画面氛围</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <div class="options-row" data-field="mood" data-multi="true">
+          <button class="opt-btn" onclick="selectMulti(this,'mood')">🌸 唯美治愈</button>
+          <button class="opt-btn" onclick="selectMulti(this,'mood')">⚔️ 史诗大气</button>
+          <button class="opt-btn" onclick="selectMulti(this,'mood')">🌑 暗黑压抑</button>
+          <button class="opt-btn" onclick="selectMulti(this,'mood')">✨ 梦幻绮丽</button>
+          <button class="opt-btn" onclick="selectMulti(this,'mood')">🔥 热血燃爆</button>
+          <button class="opt-btn" onclick="selectMulti(this,'mood')">❄️ 冷峻孤寂</button>
+        </div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">16</div>
+          <span class="q-title">其他想补充的设定</span>
+          <span class="q-optional">可选</span>
+        </div>
+        <textarea class="q-textarea" id="q-extra" placeholder="任何你想告诉 AI 的内容，越详细越好..." oninput="updateProgress()"></textarea>
+      </div>
+
+    </div><!-- end form-scroll -->
+
+    <!-- 底部操作 -->
+    <div class="form-footer">
+      <button class="btn-main" onclick="submitForm()">✨ 生成我的 OC 提示词</button>
+      <button class="btn-ghost" onclick="submitForm()">跳过未填项，直接生成</button>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 3: 结果 ==================== -->
+  <div id="page-result" class="page">
+    <div class="nav-bar">
+      <button class="nav-back" onclick="goToForm()">←</button>
+      <span class="nav-title">提示词已生成 ✨</span>
+      <button class="nav-action" onclick="goToForm()">✒ 修改</button>
+    </div>
+
+    <div class="result-scroll">
+
+      <!-- OC 摘要 -->
+      <div class="oc-summary-card">
+        <div class="oc-header">
+          <div class="oc-avatar">🎨</div>
+          <div>
+            <div class="oc-name" id="result-name">我的 OC</div>
+            <div class="oc-meta" id="result-meta">— 角色设定</div>
+          </div>
+        </div>
+        <div class="oc-tags" id="result-tags"></div>
+      </div>
+
+      <!-- 风格选择 Tab -->
+      <div class="prompt-tabs" id="prompt-tabs">
+        <button class="prompt-tab active" data-tab="standard" onclick="switchTab(this,'standard')">标准英文</button>
+        <button class="prompt-tab" data-tab="fantasy" onclick="switchTab(this,'fantasy')">奇幻史诗</button>
+        <button class="prompt-tab" data-tab="anime" onclick="switchTab(this,'anime')">动漫清新</button>
+        <button class="prompt-tab" data-tab="summary" onclick="switchTab(this,'summary')">中文总结</button>
+      </div>
+
+      <!-- 提示词展示 -->
+      <div class="prompt-card">
+        <div class="prompt-card-header">
+          <span class="prompt-card-title" id="prompt-card-title">🎨 英文提示词</span>
+          <button class="copy-small-btn" onclick="copyCurrentPrompt()">📋 复制</button>
+        </div>
+        <div class="prompt-text-box" id="prompt-display">正在生成中...</div>
+        <div class="prompt-footer">
+          <span class="token-badge" id="token-count">— tokens</span>
+          <button class="regen-btn" onclick="regenPrompt()">↺ 重新生成</button>
+        </div>
+      </div>
+
+      <!-- 中文设定总结（单独展示区） -->
+      <div class="card" id="summary-section" style="display:none;">
+        <div style="font-size:14px;font-weight:700;color:var(--pink-deep);margin-bottom:10px;">📖 角色设定总结</div>
+        <div style="font-size:14px;color:#334155;line-height:1.8;" id="summary-text"></div>
+      </div>
+
+    </div><!-- end result-scroll -->
+
+    <!-- 底部操作 -->
+    <div class="result-footer">
+      <button class="btn-main" onclick="copyAllPrompts()">📋 一键复制全部提示词</button>
+      <div class="secondary-row">
+        <button class="btn-outline" onclick="shareResult()">🧵 分享设定</button>
+        <button class="btn-outline" onclick="newOC()">➕ 新建 OC</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end app-shell -->
+
+<!-- 加载遮罩 -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">AI 正在创作中...</div>
+  <div class="loading-sub">根据你的设定生成专属提示词</div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ====== 状态 ======
+  const selections = {};   // 单选
+  const multiSel = {};     // 多选
+  let promptResults = {};  // AI 返回结果
+  let currentTab = 'standard';
+
+  const tabTitles = {
+    standard: '🎨 英文提示词（通用）',
+    fantasy:  '🌌 奇幻史诗风',
+    anime:    '🌸 小清新动漫风',
+    summary:  '📖 中文设定总结',
+  };
+
+  // ====== 页面切换 ======
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+  function goHome()   { showPage('page-home'); }
+  function goToForm() { showPage('page-form'); }
+  function newOC()    { location.reload(); }
+
+  // ====== 选项交互 ======
+  function selectOpt(btn, field) {
+    const row = btn.closest('[data-field]');
+    row.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selections[field] = btn.textContent.trim();
+    updateProgress();
+  }
+
+  function selectMulti(btn, field) {
+    btn.classList.toggle('selected');
+    if (!multiSel[field]) multiSel[field] = [];
+    const val = btn.textContent.trim();
+    if (btn.classList.contains('selected')) {
+      if (!multiSel[field].includes(val)) multiSel[field].push(val);
+    } else {
+      multiSel[field] = multiSel[field].filter(v => v !== val);
+    }
+    updateProgress();
+  }
+
+  // ====== 进度更新 ======
+  function updateProgress() {
+    const inputs = ['q-name','q-appearance','q-inner','q-job','q-backstory','q-ability','q-item','q-extra'];
+    let filled = 0;
+    const total = 16;
+    inputs.forEach(id => { if (document.getElementById(id)?.value.trim()) filled++; });
+    Object.values(selections).forEach(v => { if (v) filled++; });
+    Object.values(multiSel).forEach(arr => { if (arr.length > 0) filled++; });
+
+    const pct = Math.min(Math.round((filled / total) * 100), 100);
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-label').textContent = `已填写 ${filled} 项`;
+  }
+
+  // ====== 收集表单数据 ======
+  function collectFormData() {
+    const fields = {
+      '角色名字':     document.getElementById('q-name')?.value.trim(),
+      '性别设定':     selections['gender'],
+      '年龄感':       selections['age'],
+      '外貌描述':     document.getElementById('q-appearance')?.value.trim(),
+      '发色':         selections['haircolor'],
+      '发型':         selections['hairstyle'],
+      '性格特征':     (multiSel['personality'] || []).join('、'),
+      '内心世界':     document.getElementById('q-inner')?.value.trim(),
+      '世界观':       selections['world'],
+      '职业身份':     document.getElementById('q-job')?.value.trim(),
+      '背景故事':     document.getElementById('q-backstory')?.value.trim(),
+      '特殊能力':     document.getElementById('q-ability')?.value.trim(),
+      '服装风格':     selections['outfit'],
+      '标志性物品':   document.getElementById('q-item')?.value.trim(),
+      '画面氛围':     (multiSel['mood'] || []).join('、'),
+      '其他设定':     document.getElementById('q-extra')?.value.trim(),
+    };
+
+    let ocText = '';
+    for (const [key, val] of Object.entries(fields)) {
+      if (val) ocText += `${key}：${val}\n`;
+    }
+    return { fields, ocText };
+  }
+
+  // ====== 提交生成 ======
+  async function submitForm() {
+    const { fields, ocText } = collectFormData();
+    if (!ocText.trim()) {
+      showToast('请至少填写一项内容 😊');
+      return;
+    }
+
+    showLoading(true);
+
+    try {
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ocData: ocText }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || '生成失败，请重试');
+      }
+
+      promptResults = data.result;
+      buildResultPage(fields);
+      showPage('page-result');
+    } catch (err) {
+      showToast('⚠️ ' + (err.message || '网络错误，请重试'));
+    } finally {
+      showLoading(false);
+    }
+  }
+
+  // ====== 构建结果页 ======
+  function buildResultPage(fields) {
+    // OC 名字
+    document.getElementById('result-name').textContent = fields['角色名字'] || '我的 OC';
+    // meta 信息
+    const metaParts = [fields['性别设定'], fields['世界观'], fields['职业身份']].filter(Boolean);
+    document.getElementById('result-meta').textContent = metaParts.join(' · ') || '自设角色';
+    // 标签
+    const tagsContainer = document.getElementById('result-tags');
+    tagsContainer.innerHTML = '';
+    const tagValues = (multiSel['personality'] || []).concat(multiSel['mood'] || []);
+    tagValues.slice(0,5).forEach(t => {
+      const span = document.createElement('span');
+      span.className = 'oc-tag';
+      span.textContent = t;
+      tagsContainer.appendChild(span);
+    });
+
+    // 默认显示标准英文提示词
+    currentTab = 'standard';
+    updatePromptDisplay();
+  }
+
+  // ====== Tab 切换 ======
+  function switchTab(btn, tab) {
+    document.querySelectorAll('.prompt-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    currentTab = tab;
+    updatePromptDisplay();
+  }
+
+  function updatePromptDisplay() {
+    const text = promptResults[currentTab] || '（暂无内容）';
+    document.getElementById('prompt-display').textContent = text;
+    document.getElementById('prompt-card-title').textContent = tabTitles[currentTab] || '';
+    const words = text.split(/[\s,，]+/).filter(Boolean).length;
+    document.getElementById('token-count').textContent = `约 ${words} 词`;
+
+    // 中文总结单独展示
+    const summarySection = document.getElementById('summary-section');
+    if (currentTab === 'summary') {
+      summarySection.style.display = 'block';
+      document.getElementById('summary-text').textContent = promptResults.summary || '';
+    } else {
+      summarySection.style.display = 'none';
+    }
+  }
+
+  // ====== 复制 ======
+  function copyText(text) {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => showToast('✅ 已复制到剪贴板'));
+    } else {
+      const el = document.createElement('textarea');
+      el.value = text; el.style.position = 'fixed'; el.style.opacity = '0';
+      document.body.appendChild(el); el.focus(); el.select();
+      document.execCommand('copy'); document.body.removeChild(el);
+      showToast('✅ 已复制到剪贴板');
+    }
+  }
+
+  function copyCurrentPrompt() { copyText(promptResults[currentTab] || ''); }
+
+  function copyAllPrompts() {
+    const all = [
+      `【OC 角色：${document.getElementById('result-name').textContent}】`,
+      '',
+      '📌 标准英文提示词：',
+      promptResults.standard || '',
+      '',
+      '🌌 奇幻史诗风：',
+      promptResults.fantasy || '',
+      '',
+      '🌸 动漫清新风：',
+      promptResults.anime || '',
+      '',
+      '📖 中文设定总结：',
+      promptResults.summary || '',
+    ].join('\n');
+    copyText(all);
+  }
+
+  // ====== 分享 ======
+  function shareResult() {
+    const text = `我用 OC Studio 生成了角色「${document.getElementById('result-name').textContent}」的 AI 提示词！\n\n${promptResults.standard || ''}`;
+    if (navigator.share) {
+      navigator.share({ title: 'OC Studio', text }).catch(() => copyText(text));
+    } else {
+      copyText(text);
+      showToast('内容已复制，可粘贴到任何地方分享 🎉');
+    }
+  }
+
+  // ====== 重新生成 ======
+  function regenPrompt() {
+    const { ocText } = collectFormData();
+    if (!ocText.trim()) { showToast('请先填写 OC 信息'); return; }
+    submitForm();
+  }
+
+  // ====== 工具函数 ======
+  function showLoading(show) {
+    document.getElementById('loading-overlay').classList.toggle('show', show);
+  }
+
+  function showToast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2500);
+  }
+</script>
+</body>
+</html>
